@@ -1,4 +1,3 @@
 # WHYspace
 
-
-We are coming!
+WHYspace is coming
