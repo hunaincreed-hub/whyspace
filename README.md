@@ -1,1 +1,1 @@
-print(""Hello world!)
+Do you know WHY?
