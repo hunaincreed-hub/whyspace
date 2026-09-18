@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d1522" />
+    <title>WHYspace — AI that helps you think</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Workspace navigation">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span>WHYspace</span>
+        </div>
+
+        <button class="new-chat" id="new-chat" type="button">
+          <span class="plus" aria-hidden="true">+</span>
+          <span>New conversation</span>
+          <span class="shortcut">⌘ K</span>
+        </button>
+
+        <nav class="nav-links">
+          <a class="nav-link active" href="#chat"><span class="nav-icon">✦</span> Chat <span class="nav-count">1</span></a>
+          <a class="nav-link" href="#discover"><span class="nav-icon">⌘</span> Discover</a>
+          <a class="nav-link" href="#saved"><span class="nav-icon">◇</span> Saved</a>
+        </nav>
+
+        <div class="history">
+          <div class="section-label">Recent</div>
+          <button class="history-item current" type="button">A better way to think</button>
+          <button class="history-item" type="button">The science of habits</button>
+          <button class="history-item" type="button">Planning a creative project</button>
+          <button class="history-item" type="button">Notes from my commute</button>
+        </div>
+
+        <div class="sidebar-bottom">
+          <div class="tip-card">
+            <span class="tip-spark">✦</span>
+            <div><strong>Make space for ideas.</strong><p>Ask anything. Follow the interesting threads.</p></div>
+          </div>
+          <button class="profile" type="button">
+            <span class="avatar">AM</span>
+            <span class="profile-copy"><strong>Alex Morgan</strong><small>Personal space</small></span>
+            <span class="more">•••</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="main-content" id="chat">
+        <header class="topbar">
+          <div class="crumbs"><span class="crumb-muted">Chat</span><span class="crumb-divider">/</span><span>A better way to think</span></div>
+          <div class="top-actions">
+            <button class="icon-button" type="button" aria-label="Search conversations">⌕</button>
+            <button class="share-button" type="button"><span aria-hidden="true">↗</span> Share</button>
+          </div>
+        </header>
+
+        <section class="chat-area" aria-live="polite">
+          <div class="conversation">
+            <div class="welcome-block">
+              <span class="eyebrow">A conversation with WHYspace</span>
+              <h1>What are you curious about<br /><em>today?</em></h1>
+              <p class="welcome-copy">A little more clarity is usually one good question away.</p>
+            </div>
+
+            <div class="message user-message">
+              <div class="message-meta"><span class="avatar user-avatar">AM</span><span>You</span><span class="message-time">9:41 AM</span></div>
+              <p>I've been thinking about how to make better decisions. Not just faster decisions — better ones.</p>
+            </div>
+
+            <div class="message assistant-message">
+              <div class="message-meta"><span class="ai-avatar"><span>✦</span></span><span>WHYspace</span><span class="online-dot"></span><span class="message-time">9:41 AM</span></div>
+              <div class="assistant-copy">
+                <p>That’s a worthwhile distinction. Speed is easy to measure, but a good decision is usually about <strong>asking a better question first.</strong></p>
+                <p>Before we get into frameworks, can I ask: when you think of a recent decision you’re proud of, what made it feel like the right one?</p>
+              </div>
+              <div class="message-tools">
+                <button type="button" aria-label="Copy response">▣</button>
+                <button type="button" aria-label="Like response">♡</button>
+                <button type="button" aria-label="Dislike response">♧</button>
+                <span class="tool-spacer"></span><button type="button" aria-label="More options">•••</button>
+              </div>
+            </div>
+
+            <div class="suggestions">
+              <span class="suggestions-label">Continue the thought</span>
+              <div class="suggestion-list">
+                <button class="suggestion" type="button">I trusted my intuition <span>→</span></button>
+                <button class="suggestion" type="button">I had enough information <span>→</span></button>
+                <button class="suggestion" type="button">I knew what mattered most <span>→</span></button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="composer-wrap">
+          <form class="composer" id="composer">
+            <textarea id="message-input" rows="1" placeholder="Ask WHYspace anything..." aria-label="Message WHYspace"></textarea>
+            <div class="composer-actions">
+              <div class="composer-tools">
+                <button type="button" class="composer-button" aria-label="Attach a file">＋ <span>Attach</span></button>
+                <button type="button" class="composer-button" aria-label="Use voice input">◉ <span>Voice</span></button>
+              </div>
+              <span class="enter-hint">↵ to send</span>
+              <button class="send-button" type="submit" aria-label="Send message">↑</button>
+            </div>
+          </form>
+          <p class="disclaimer">WHYspace can make mistakes. Check important information.</p>
+        </footer>
+      </main>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
