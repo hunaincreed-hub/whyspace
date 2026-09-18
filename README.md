@@ -1,1 +1,1 @@
-Do you know WHY?
+The AI for Explorers
