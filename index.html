@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="WHYspace — a responsive space for turning ideas into words." />
+    <title>WHYspace — Responsive Text Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="WHYspace home"><span>WHY</span>space</a>
+        <p class="status"><i></i> responsive ideas, ready</p>
+      </header>
+
+      <section class="hero" id="top">
+        <p class="eyebrow">THE FIRST SPACE FOR YOUR WHY</p>
+        <h1>Give your thought<br /><em>somewhere to go.</em></h1>
+        <p class="intro">Describe what you need. WHYspace shapes it into clear, useful text—right when you need it.</p>
+      </section>
+
+      <section class="workspace" aria-label="Text generator">
+        <form id="generator-form">
+          <label for="prompt">What are we making?</label>
+          <div class="prompt-box">
+            <textarea id="prompt" name="prompt" maxlength="600" placeholder="Try: Write a warm welcome message for new community members..." required></textarea>
+            <div class="prompt-footer">
+              <span id="count">0 / 600</span>
+              <button type="submit">Create response <span aria-hidden="true">↗</span></button>
+            </div>
+          </div>
+        </form>
+
+        <div class="suggestions" aria-label="Suggested prompts">
+          <button type="button" data-prompt="Help me turn a rough idea into a clear plan.">Make a plan</button>
+          <button type="button" data-prompt="Write a thoughtful message to reconnect with someone.">Write a message</button>
+          <button type="button" data-prompt="Give me three fresh ways to introduce a creative project.">Spark an idea</button>
+        </div>
+
+        <article class="response-card" id="response-card" aria-live="polite">
+          <div class="response-heading"><span>WHYspace response</span><button id="copy-button" type="button" disabled>Copy</button></div>
+          <p id="response">Your next thought has a home here. Tell WHYspace what is on your mind, and a response will appear.</p>
+        </article>
+      </section>
+    </main>
+    <footer>WHYspace <span>·</span> built for the question behind the question</footer>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
