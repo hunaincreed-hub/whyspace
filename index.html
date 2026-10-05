@@ -3,51 +3,57 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="WHYspace — a responsive space for turning ideas into words." />
-    <title>WHYspace — Responsive Text Generator</title>
+    <meta name="description" content="WHYspace — a calm AI space for thinking, writing, and building." />
+    <title>WHYspace · Curiosity lives here</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="assets/css/styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <a class="brand" href="#top" aria-label="WHYspace home"><span>WHY</span>space</a>
-        <p class="status"><i></i> responsive ideas, ready</p>
-      </header>
-
-      <section class="hero" id="top">
-        <p class="eyebrow">THE FIRST SPACE FOR YOUR WHY</p>
-        <h1>Give your thought<br /><em>somewhere to go.</em></h1>
-        <p class="intro">Describe what you need. WHYspace shapes it into clear, useful text—right when you need it.</p>
-      </section>
-
-      <section class="workspace" aria-label="Text generator">
-        <form id="generator-form">
-          <label for="prompt">What are we making?</label>
-          <div class="prompt-box">
-            <textarea id="prompt" name="prompt" maxlength="600" placeholder="Try: Write a warm welcome message for new community members..." required></textarea>
-            <div class="prompt-footer">
-              <span id="count">0 / 600</span>
-              <button type="submit">Create response <span aria-hidden="true">↗</span></button>
-            </div>
-          </div>
-        </form>
-
-        <div class="suggestions" aria-label="Suggested prompts">
-          <button type="button" data-prompt="Help me turn a rough idea into a clear plan.">Make a plan</button>
-          <button type="button" data-prompt="Write a thoughtful message to reconnect with someone.">Write a message</button>
-          <button type="button" data-prompt="Give me three fresh ways to introduce a creative project.">Spark an idea</button>
+    <div class="atmosphere" aria-hidden="true"><span class="orb orb-one"></span><span class="orb orb-two"></span><span class="orb orb-three"></span></div>
+    <div class="app-shell">
+      <aside class="sidebar glass-panel" aria-label="Conversation navigation">
+        <div class="sidebar-header">
+          <a class="brand-row" href="#home" aria-label="WHYspace home"><span class="brand-mark">wy</span><span class="brand-text">WHYspace</span></a>
+          <button class="glass-icon-button mobile-close" type="button" data-sidebar-close aria-label="Close sidebar" title="Close sidebar"><span aria-hidden="true">×</span></button>
+          <button class="glass-icon-button add-button" type="button" data-new-chat aria-label="Start a new conversation"><span aria-hidden="true">+</span></button>
         </div>
-
-        <article class="response-card" id="response-card" aria-live="polite">
-          <div class="response-heading"><span>WHYspace response</span><button id="copy-button" type="button" disabled>Copy</button></div>
-          <p id="response">Your next thought has a home here. Tell WHYspace what is on your mind, and a response will appear.</p>
-        </article>
-      </section>
-    </main>
-    <footer>WHYspace <span>·</span> built for the question behind the question</footer>
-    <script src="assets/js/app.js"></script>
+        <button class="new-conversation glass-button" type="button" data-new-chat><span class="button-symbol" aria-hidden="true">+</span> New conversation</button>
+        <label class="sidebar-search" for="conversation-search"><span aria-hidden="true">⌕</span><input id="conversation-search" type="search" placeholder="Search conversations" autocomplete="off" /></label>
+        <nav class="sidebar-navigation" aria-label="Main navigation">
+          <button type="button" class="nav-chip active" data-view="home" aria-current="page">Home</button>
+          <button type="button" class="nav-chip" data-view="chat">Chat</button>
+          <button type="button" class="nav-chip" data-view="studio">Studio</button>
+        </nav>
+        <div class="sidebar-section workspace-section"><div class="section-caption"><span>Your space</span><button type="button" class="text-button" aria-label="Create a folder">+</button></div><button type="button" class="workspace-item"><span class="workspace-dot" aria-hidden="true"></span><span>Curious ideas</span><span class="item-count">0</span></button></div>
+        <div class="sidebar-section history-section"><div class="section-caption"><span>Recent thoughts</span><button type="button" class="text-button delete-all-history" data-delete-all-conversations aria-label="Delete all conversations">Delete all</button></div><div class="history-list" id="history-list"></div></div>
+        <div class="sidebar-footer"><button type="button" class="settings-row glass-button" data-open-settings><span class="settings-icon" aria-hidden="true">⚙</span><span>Settings</span></button><button type="button" class="profile-mini" data-open-settings aria-label="Open account settings"><span class="mini-avatar">HK</span><span class="profile-copy"><strong>Hunain Khan</strong><small>hunain.creed1@gmail.com</small></span><span class="profile-more" aria-hidden="true">···</span></button></div>
+      </aside>
+      <main class="main-panel" aria-label="WHYspace">
+        <header class="topbar">
+          <button class="glass-icon-button menu-toggle" type="button" data-sidebar-open aria-label="Open sidebar" title="Open sidebar"><span aria-hidden="true">☰</span></button>
+          <a class="brand-inline" href="#home" aria-label="WHYspace home"><span class="brand-mark small">wy</span><span class="brand-text">WHYspace</span></a>
+          <div class="page-context" id="page-context">Home</div>
+          <div class="top-actions"><button type="button" class="glass-icon-button theme-toggle" data-theme-toggle aria-label="Switch to dark mode"><span aria-hidden="true">◐</span></button><button type="button" class="user-badge" data-open-settings aria-label="Open account settings">HK</button></div>
+        </header>
+        <section class="app-view home-view active" data-view-panel="home" aria-labelledby="home-heading"><div class="chat-stage"><div class="presence-pill"><span class="presence-dot" aria-hidden="true"></span> Curiosity lives here</div><div class="welcome-intro"><p class="eyebrow">A quiet place for bright thoughts</p><h1 id="home-heading">Where does your curiosity want to go?</h1><p>Think out loud, find the shape of an idea, or make a first draft feel like yours.</p></div><div class="conversation-shell"><div class="messages" aria-live="polite" aria-label="Conversation"><div class="message-row assistant initial"><div class="assistant-identity"><span class="assistant-spark" aria-hidden="true">✦</span><span>WHYspace</span></div><div class="message-bubble welcome">I’m here for the unfinished thought, the useful question, and the idea worth following.</div></div></div><div id="status" class="status" data-state="idle" role="status">Ready when you are.</div><form id="generator-form" class="composer glass-panel" autocomplete="off"><label class="sr-only" for="prompt">Message for WHYspace</label><textarea id="prompt" name="prompt" rows="1" maxlength="600" placeholder="Ask WHYspace anything…" required></textarea><button id="search-web-toggle" class="search-web-toggle" type="button" aria-pressed="false" aria-label="Search the web for this message"><span aria-hidden="true">⌕</span> Search the web</button><button type="submit" class="send-button" aria-label="Send message"><span aria-hidden="true">↑</span></button></form><div class="composer-footer"><div class="quick-actions" aria-label="Suggested prompts"><button type="button" data-prompt="Help me turn this rough idea into a polished paragraph.">Refine an idea</button><button type="button" data-prompt="Give me a clear, calm summary of the most important points in this topic.">Summarize</button><button type="button" data-prompt="Draft a thoughtful message for my friend or client.">Draft a message</button></div></div></div></div></section>
+        <section class="app-view chat-view" data-view-panel="chat" aria-labelledby="chat-heading" hidden><div class="section-page"><div class="page-heading"><p class="eyebrow">Conversation</p><h1 id="chat-heading">Your thinking space</h1><p>Continue the conversation below, without losing the thread.</p></div><button type="button" class="glass-button primary-action" data-focus-composer><span aria-hidden="true">✦</span> Start with a thought</button></div></section>
+        <section class="app-view studio-view" data-view-panel="studio" aria-labelledby="studio-heading" hidden><div class="section-page studio-page"><div class="page-heading"><p class="eyebrow">Studio</p><h1 id="studio-heading">Make room for what’s next.</h1><p>Use this space to collect an idea before it becomes a project.</p></div><div class="studio-grid"><article class="studio-card glass-panel"><span class="card-icon" aria-hidden="true">✦</span><h2>Begin with a spark</h2><p>Ask a question, sketch a direction, or return to a thought that needs more time.</p><button type="button" class="text-button" data-focus-composer>Open chat <span aria-hidden="true">→</span></button></article><article class="studio-card glass-panel muted-card"><span class="card-icon" aria-hidden="true">◒</span><h2>Ideas in progress</h2><p>There are no saved studio pieces yet. The best place to start is a small question.</p></article></div></div></section>
+      </main>
+    </div>
+    <div class="sidebar-scrim" data-sidebar-close aria-hidden="true"></div>
+    <div id="history-confirmation" class="history-confirmation" hidden aria-live="assertive">
+      <div class="history-confirmation-card glass-panel" role="dialog" aria-modal="false" aria-labelledby="history-confirmation-title">
+        <p id="history-confirmation-title" data-confirm-title>Delete this conversation?</p>
+        <p data-confirm-description>This conversation will be permanently removed from your history.</p>
+        <div class="history-confirmation-actions">
+          <button type="button" class="glass-button history-confirm-cancel" data-confirm-cancel>Cancel</button>
+          <button type="button" class="glass-button history-confirm-delete" data-confirm-action>Delete</button>
+        </div>
+      </div>
+    </div>
+    <dialog class="settings-dialog glass-panel" id="settings-dialog" aria-labelledby="settings-title"><div class="dialog-header"><div><p class="eyebrow">Preferences</p><h2 id="settings-title">Make WHYspace yours</h2></div><button type="button" class="glass-icon-button" data-close-settings aria-label="Close settings"><span aria-hidden="true">×</span></button></div><div class="settings-stack"><section class="settings-group"><div><h3>Appearance</h3><p>Choose the atmosphere that feels best for your focus.</p></div><div class="setting-control"><span>Color mode</span><button type="button" class="theme-choice" data-theme-toggle><span class="mode-light">Light</span><span class="mode-dark">Dark</span><span class="theme-choice-knob" aria-hidden="true"></span></button></div></section><section class="settings-group"><div><h3>Conversation</h3><p>Keep the composer spacious and calm while you think.</p></div><div class="setting-control"><span>Enter sends message</span><span class="static-switch" aria-label="Enter sends message, enabled"><span></span></span></div></section><section class="settings-group"><div><h3>Account</h3><p>Hunain Khan<br /><span>hunain.creed1@gmail.com</span></p></div><button type="button" class="glass-button" data-close-settings>Done</button></section></div></dialog>
+    <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>

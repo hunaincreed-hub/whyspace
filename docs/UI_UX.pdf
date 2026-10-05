@@ -1,0 +1,204 @@
+# WHYspace Workspace Navigation
+
+## Spatial Canvas
+
+The WHYspace desktop is a **zero-gravity spatial canvas** — windows float in 2D space without a rigid grid. This creates a feel similar to VisionOS, combined with the productivity of a traditional desktop.
+
+### Interaction Model
+
+| Action | Input | Behavior |
+|---|---|---|
+| Move window | Drag title bar | Free float, snaps to screen edge |
+| Resize window | Drag corner/border | Maintains aspect ratio (optional) |
+| Focus window | Click anywhere | Raises to top, routes keyboard |
+| Close window | Click X | Saves state, terminates program |
+| Minimize | Click — | Goes to taskbar, preserves state |
+| Maximize | Double-click title | Full canvas, not fullscreen |
+
+### Spatial Zones
+
+```
+┌─────────────────────────────────────────────────────┐
+│  TOP BAR                                             │
+│  [Provider ◆ Gemini 2.0]  [● ONLINE]  [Mem: 42%]   │
+├──────────┬──────────────────────────────────────────┤
+│ LAUNCH   │  SPATIAL CANVAS (2048×1152 virtual)      │
+│ PAD      │  ┌──────┐    ┌──────────────┐            │
+│          │  │ Chat │    │  Code Studio │            │
+│ ───────  │  │  📝  │    │   [FOCUSED]  │            │
+│ ○ Chat   │  └──────┘    └──────────────┘            │
+│ ○ Code   │         ┌──────────────────┐             │
+│ ○ Mem    │         │  Memory Vault    │             │
+│ ○ Res    │         │   (background)   │             │
+│ ○ Img    │         └──────────────────┘             │
+│ ○ Voice  │                                          │
+│ ○ Wrkfl  │     ┌──────────────────────────┐         │
+│ ○ Term   │     │  Research Agent          │         │
+│          │     │  loading... ████████░░    │         │
+│          │     └──────────────────────────┘         │
+├──────────┴──────────────────────────────────────────┤
+│  TASKBAR                                            │
+│  ◆ Start  │ ✦ Chat │ ✦ Code St. │ ✦ Mem │ ✦ Res │ ⏰│
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## Window Manager
+
+### Window State
+
+```typescript
+interface WindowState {
+  id: string;           // unique window ID
+  programId: string;    // refers to ProgramManifest.id
+  title: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number };
+  minimized: boolean;
+  focused: boolean;
+  zIndex: number;
+  state: 'loading' | 'ready' | 'error';
+}
+```
+
+### Tiling Support
+
+Windows can optionally snap to a tiling grid:
+
+| Shortcut | Action |
+|---|---|
+| `Win+←` | Tile left half |
+| `Win+→` | Tile right half |
+| `Win+↑` | Tile top half |
+| `Win+↓` | Tile bottom half |
+| `Win+Shift+←` | Move to left monitor (future) |
+
+---
+
+## Command Palette
+
+`Cmd+K` / `Ctrl+K` opens the universal command palette:
+
+```
+┌─────────────────────────────────────────────┐
+│  🔍  Search commands and files...      │◄── focused
+├─────────────────────────────────────────────┤
+│  Recent                                      │
+│  ├─ Launch Research Agent                    │
+│  ├─ "Explain quantum computing"              │
+│  └─ Switch to Gemini 2.0 Pro                 │
+│                                              │
+│  Programs                                    │
+│  ├─ Chat — Start new conversation            │
+│  ├─ Code Studio — Open code editor           │
+│  ├─ Memory Vault — Browse knowledge          │
+│  ├─ Image Forge — Generate image             │
+│  ├─ Voice Nexus — Voice settings             │
+│  ├─ AI Terminal — System shell               │
+│  └─ Settings — System configuration          │
+│                                              │
+│  Commands                                    │
+│  ├─ /clear — Clear current conversation      │
+│  ├─ /export — Export conversation            │
+│  ├─ /provider — Switch AI provider           │
+│  └─ /help — Show all commands               │
+│                                              │
+│  Files                                       │
+│  ├─ whyspace/docs/ARCHITECTURE.md            │
+│  └─ whyspace/packages/frontend/src/          │
+└─────────────────────────────────────────────┘
+```
+
+### Command Sources
+
+| Source | Description |
+|---|---|
+| Built-in | System commands (`/clear`, `/help`) |
+| Program | Commands exposed by individual programs |
+| AI-generated | Dynamic commands based on context |
+| Recent | Recently used commands and files |
+| Searchable | Full-text search across all sources |
+
+---
+
+## Launchpad
+
+The launchpad (accessible from taskbar or `Cmd+Space`) shows all installed programs:
+
+```
+┌─────────────────────────────────────────────┐
+│  All Programs                          ✕    │
+├─────────────────────────────────────────────┤
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │ 💬  │ │ 💻  │ │ 🔬  │ │ 🧠  │       │
+│  │ Chat │ │ Code │ │Research│ │Memory│       │
+│  └──────┘ └──────┘ └──────┘ └──────┘       │
+│  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐       │
+│  │ 🎨  │ │ 🎤  │ │ ⚡  │ │ ⌨️  │       │
+│  │ Image│ │ Voice│ │Wrkfl │ │Term  │       │
+│  └──────┘ └──────┘ └──────┘ └──────┘       │
+│                                              │
+│  ┌──────────────────────────────────────┐   │
+│  │  Install more programs...            │   │
+│  └──────────────────────────────────────┘   │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Cmd+K` | Toggle command palette |
+| `Cmd+Space` | Open launchpad |
+| `Alt+Tab` | Cycle through open programs |
+| `Cmd+W` | Close focused window |
+| `Cmd+N` | New conversation (focused program) |
+| `Cmd+Enter` | Send message (focused chat) |
+| `Shift+Enter` | New line in input |
+| `Cmd+Shift+V` | Toggle voice input |
+| `Cmd+Shift+P` | Switch AI provider |
+| `Cmd+,` | Open settings |
+| `Escape` | Close modal / blur |
+| `Cmd+1-9` | Switch to program N in taskbar |
+
+---
+
+## Visual Design Language
+
+### Anti-Gravity Spatial UI
+
+| Element | Behavior |
+|---|---|
+| **Floating panels** | Shadows, slight rotation on hover, magnetic edges |
+| **Transitions** | Spring animations, smooth easing, no abrupt jumps |
+| **Glass morphism** | Backdrop blur, subtle borders, frosted glass |
+| **Depth layers** | Z-index creates atmospheric perspective |
+| **Orbital indicators** | Loading states use orbital particle animations |
+| **Holographic accents** | Cyan/violet glow, scan-line overlays |
+
+### Color System
+
+```
+Primary:   Cyan (#00E5FF)
+Secondary: Violet (#7C3AED)
+Accent:    Amber (#FFB300)
+Surface:   Dark (#0A0A1A)
+Glass:     rgba(255,255,255,0.03)
+Border:    rgba(0,229,255,0.2)
+Text:      White (#FFFFFF)
+Muted:     rgba(255,255,255,0.5)
+Error:     Red (#FF4444)
+Success:   Green (#00E676)
+```
+
+### Typography
+
+| Usage | Font |
+|---|---|
+| UI labels, body | Inter / Outfit |
+| Code | JetBrains Mono |
+| Headlines, branding | Orbitron |
+| Technical content | Space Grotesk |

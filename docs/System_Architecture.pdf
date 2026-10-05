@@ -1,0 +1,517 @@
+# WHYspace — AI Operating System Architecture
+
+## Overview
+
+WHYspace is not a chatbot. It is an **AI-native operating environment** — a spatial workspace where AI programs run, communicate, and share memory. The entire system is built around a **kernel + programs** model, inspired by operating system design, adapted for AI interaction.
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    USER INTERFACE                    │
+│   Spatial Desktop · Window Manager · Command Palette │
+├──────────────────────────────────────────────────────┤
+│                   APPLICATION LAYER                  │
+│   Core Chat │ Code Studio │ Research Agent           │
+│   Memory Vault │ Image Forge │ Voice Nexus           │
+│   Workflow Automator │ AI Terminal                   │
+├──────────────────────────────────────────────────────┤
+│                     OS KERNEL                        │
+│   ┌──────────┐ ┌──────────┐ ┌──────────────────┐    │
+│   │ System   │ │ Context  │ │ Provider         │    │
+│   │ Calls    │ │ Manager  │ │ Abstraction      │    │
+│   ├──────────┤ ├──────────┤ ├──────────────────┤    │
+│   │ Memory   │ │ Workflow │ │ Agent            │    │
+│   │ Orchestr.│ │ Engine   │ │ Communicator     │    │
+│   └──────────┘ └──────────┘ └──────────────────┘    │
+├──────────────────────────────────────────────────────┤
+│                   AI DRIVERS                         │
+│   OpenAI │ Gemini │ Ollama │ OpenRouter             │
+│   Streaming-first · Hot-swappable · Unified Protocol │
+└──────────────────────────────────────────────────────┘
+```
+
+## Design Principles
+
+1. **Programs, not prompts** — Every interaction mode is a first-class app
+2. **Kernel, not middleware** — System calls are the primitive, not REST endpoints
+3. **Memory is a filesystem** — Context is structured, searchable, persistent
+4. **Spatial, not linear** — UI is a canvas, not a feed
+5. **Provider-agnostic** — AI drivers are hot-swappable plugins
+6. **Composable workflows** — Programs pipe output into each other
+
+---
+
+## 1. Desktop Interaction Model
+
+### Spatial Workspace
+
+```
+┌────────────────────────────────────────────────────────┐
+│  Taskbar  [Core Chat] [Code Studio] [Memory Vault]  ▲  │
+├──────────┬─────────────────────────────────────────────┤
+│ Launchpad│                                             │
+│          │         SPATIAL CANVAS                      │
+│  ○ Chat  │  ┌────────────────┐  ┌────────────────┐    │
+│  ○ Code  │  │  Code Studio   │  │  Research Agent│    │
+│  ○ Mem   │  │  (focused)     │  │  (minimized)   │    │
+│  ○ Res   │  └────────────────┘  └────────────────┘    │
+│  ○ Img   │                                             │
+│  ○ Voice │         ┌────────────────────┐              │
+│  ○ Wrkfl │         │  Core Chat         │              │
+│  ○ Term  │         │  (background)      │              │
+│          │         └────────────────────┘              │
+├──────────┴─────────────────────────────────────────────┤
+│  Status: Online │ Provider: Gemini 2.0 │ Memory: 42%  │
+└────────────────────────────────────────────────────────┘
+```
+
+### Key Behaviors
+
+- **Floating windows** — Programs render in draggable, resizable panels
+- **Spatial memory** — Window positions persist per workspace
+- **Focus system** — Focused program receives keyboard + AI priority
+- **Command Palette** — `Cmd+K` / `Ctrl+K` triggers universal command search
+- **Quick Switch** — `Alt+Tab` cycles through open programs
+- **Workspaces** — Multiple virtual desktops for task grouping
+
+---
+
+## 2. AI Program Framework
+
+Every program in WHYspace follows a standard interface:
+
+```typescript
+interface AIProgram {
+  id: string;
+  name: string;
+  version: string;
+  icon: React.ComponentType;
+  component: React.ComponentType<ProgramProps>;
+
+  // Program metadata
+  description: string;
+  category: ProgramCategory;
+  permissions: Permission[];
+
+  // Lifecycle
+  onInstall?: () => void;
+  onUninstall?: () => void;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
+
+  // Program-specific system prompt (injected into context)
+  systemPrompt?: string;
+
+  // Default window config
+  defaultWindow: {
+    width: number;
+    height: number;
+    position?: { x: number; y: number };
+    minWidth?: number;
+    minHeight?: number;
+  };
+
+  // Quick actions for command palette
+  commands: Command[];
+}
+```
+
+### Program Categories
+
+| Category | Programs |
+|---|---|
+| **Communication** | Core Chat, Voice Nexus |
+| **Development** | Code Studio, AI Terminal |
+| **Knowledge** | Research Agent, Memory Vault |
+| **Creative** | Image Forge, Story Weaver |
+| **Automation** | Workflow Automator, Agent Scheduler |
+| **System** | Settings, Program Manager, Provider Config |
+
+### Built-in Programs
+
+| Program | Purpose |
+|---|---|
+| **Core Chat** | Conversational AI with full context |
+| **Code Studio** | Multi-language code editor + AI pair programmer |
+| **Research Agent** | Deep research with source synthesis |
+| **Memory Vault** | Visual knowledge graph + memory browser |
+| **Image Forge** | AI image generation + editing |
+| **Voice Nexus** | Speech-to-text + text-to-speech hub |
+| **Workflow Automator** | Visual pipeline builder for AI workflows |
+| **AI Terminal** | Shell-like interface for system calls |
+
+---
+
+## 3. System Call Architecture
+
+Instead of conventional API calls, programs communicate through a **system call interface** modeled after Unix syscalls.
+
+### Core System Calls
+
+```
+┌─────────────────────────────────────────────┐
+│              SYSTEM CALL LAYER               │
+├─────────────────────────────────────────────┤
+│  AI Calls                                    │
+│    ai.complete(prompt, opts) → Response      │
+│    ai.stream(prompt, opts) → Stream<Chunk>   │
+│    ai.embed(text) → Vector                   │
+│    ai.analyze(image) → Analysis              │
+│                                              │
+│  Memory Calls                                │
+│    memory.store(key, value, meta) → void     │
+│    memory.search(query) → Result[]           │
+│    memory.delete(id) → void                  │
+│    memory.sync() → void                      │
+│                                              │
+│  Program Calls                               │
+│    program.launch(id, params) → PID          │
+│    program.kill(pid) → void                  │
+│    program.list() → Program[]                │
+│    program.pipe(from, to, transform) → void  │
+│                                              │
+│  File Calls                                  │
+│    fs.read(path) → Buffer                    │
+│    fs.write(path, data) → void               │
+│    fs.list(path) → Entry[]                   │
+│    fs.watch(path) → Stream<Event>            │
+│                                              │
+│  Multimodal Calls                            │
+│    vision.analyze(image, prompt) → Analysis   │
+│    voice.synthesize(text) → Audio            │
+│    voice.transcribe(audio) → Text            │
+│    audio.generate(params) → Audio            │
+│                                              │
+│  Workflow Calls                              │
+│    workflow.create(name, steps) → ID         │
+│    workflow.execute(id, input) → Output      │
+│    workflow.schedule(id, cron) → void        │
+│    workflow.status(id) → Status              │
+│                                              │
+│  System Calls                                │
+│    sys.info() → SystemInfo                   │
+│    sys.providers() → Provider[]              │
+│    sys.config(key) → Value                   │
+│    sys.log(level, msg) → void                │
+└─────────────────────────────────────────────┘
+```
+
+### Call Flow
+
+```
+Program → System Call → Kernel → Provider → AI Model
+                              ↓
+                         Memory Store
+                              ↓
+                         Stream Back
+```
+
+### Streaming Protocol
+
+All AI system calls are **streaming-first**:
+
+```typescript
+// Client receives chunked responses via WebSocket
+interface SyscallResponse {
+  type: 'chunk' | 'delta' | 'done' | 'error' | 'tool_use';
+  id: string;
+  data: unknown;
+  metadata?: {
+    tokens?: number;
+    latency?: number;
+    provider: string;
+    model: string;
+  };
+}
+```
+
+---
+
+## 4. Provider Abstraction Layer
+
+### Architecture
+
+```
+┌────────────────────────────────────────────┐
+│            Provider Abstraction            │
+│  ┌────────┐  ┌────────┐  ┌────────┐       │
+│  │ OpenAI │  │ Gemini │  │ Ollama │  ...   │
+│  │ Driver │  │ Driver │  │ Driver │       │
+│  ├────────┤  ├────────┤  ├────────┤       │
+│  │ Chat   │  │ Chat   │  │ Chat   │       │
+│  │ Stream │  │ Stream │  │ Stream │       │
+│  │ Embed  │  │ Embed  │  │ Embed  │       │
+│  │ Vision │  │ Vision │  │ Vision │       │
+│  │ Audio  │  │ Audio  │  │ Audio  │       │
+│  └────────┘  └────────┘  └────────┘       │
+└────────────────────────────────────────────┘
+```
+
+### Provider Interface
+
+```typescript
+interface AIProvider {
+  id: string;
+  name: string;
+  models: AIModel[];
+  capabilities: Capability[];
+
+  // Core
+  complete(req: CompleteRequest): Promise<CompleteResponse>;
+  stream(req: CompleteRequest): AsyncIterable<StreamChunk>;
+
+  // Embeddings
+  embed(text: string): Promise<number[]>;
+
+  // Multimodal (optional)
+  analyzeImage?(image: ImageInput, prompt: string): Promise<Analysis>;
+  synthesizeSpeech?(text: string, voice: VoiceConfig): Promise<AudioBuffer>;
+  transcribeSpeech?(audio: AudioInput): Promise<string>;
+
+  // Configuration
+  configure(config: ProviderConfig): void;
+  health(): Promise<ProviderHealth>;
+}
+```
+
+### Routing Strategy
+
+- **Automatic**: Kernel routes based on capability + availability
+- **Manual**: User/provider override per program
+- **Fallback chain**: Primary → Secondary → Local (Ollama)
+
+---
+
+## 5. Memory Orchestration
+
+### Architecture
+
+Memory is a **three-tier system**:
+
+```
+Tier 1: Ephemeral (Session)
+  └─ Active conversation context
+  └─ Current program state
+  └─ Window positions, UI state
+
+Tier 2: Working (Local)  
+  └─ Recent conversations (last N)
+  └─ Program-specific knowledge
+  └─ User preferences
+  └─ SQLite (indexed + serialized)
+
+Tier 3: Persistent (Knowledge FS)
+  └─ All historical conversations
+  └─ Saved research, code, documents
+  └─ Vector embeddings for semantic search
+  └─ PostgreSQL (future)
+```
+
+### Memory System Calls
+
+```typescript
+// Store structured memory
+memory.store({
+  key: "project/whyspace/architecture",
+  value: { /* structured data */ },
+  metadata: {
+    program: "research-agent",
+    timestamp: Date.now(),
+    tags: ["architecture", "whyspace", "kernel"],
+    embedding: vector // auto-generated
+  }
+});
+
+// Semantic search
+memory.search({
+  query: "quantum routing patterns",
+  limit: 5,
+  threshold: 0.7,
+  programs: ["research-agent", "code-studio"]
+});
+
+// Context injection
+memory.context({
+  program: "core-chat",
+  maxTokens: 2000,
+  recency: true,
+  relevance: true
+});
+```
+
+---
+
+## 6. Multimodal Runtime
+
+### Input Pipeline
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────────┐
+│  Text    │───→│          │    │              │
+│  Image   │───→│  Kernel  │───→│  AI Provider │
+│  Audio   │───→│  Router  │    │  (best fit)  │
+│  File    │───→│          │    │              │
+│  Video   │───→│          │    │              │
+└──────────┘    └──────────┘    └──────────────┘
+                      │
+                ┌─────┴──────┐
+                │  Preprocessor           │
+                │  OCR · ASR · Embed   │
+                └────────────────┘
+```
+
+### Supported Modalities
+
+| Modality | Input | Output | Provider Support |
+|---|---|---|---|
+| Text | ⌨️ Keyboard / Paste | Markdown / Code / JSON | All |
+| Image | 📸 Upload / Paste | Analysis / Edit / Generation | Gemini, OpenAI |
+| Audio | 🎤 Microphone / File | Transcription / Music | OpenAI, Gemini |
+| Code | 📄 File / Editor | Execution / Debug / Refactor | Code Studio |
+| File | 📎 Drag & Drop | Parse / Transform | Any text-based |
+
+---
+
+## 7. Workspace Navigation
+
+### Navigation Map
+
+```
+MAIN DESKTOP
+├── Spatial Canvas (floating windows)
+│   ├── Core Chat
+│   ├── Code Studio
+│   ├── Research Agent
+│   └── ...
+├── Taskbar (bottom)
+│   ├── Start / Launchpad
+│   ├── Open program tabs
+│   └── System tray
+├── Command Palette (Cmd+K overlay)
+│   ├── Program search
+│   ├── System commands
+│   └── AI quick actions
+└── Status Bar (top)
+    ├── Provider indicator
+    ├── Memory usage
+    └── Connection status
+```
+
+### Command Palette
+
+The command palette is the primary navigation mechanism:
+
+```
+> ⌨️ Cmd+K
+
+  ┌─────────────────────────────────┐
+  │  Search commands...        ▲    │
+  ├─────────────────────────────────┤
+  │  > Launch Research Agent        │
+  │  > Create new note in Memory... │
+  │  > Switch provider to Gemini    │
+  │  > Run workflow "daily brief"   │
+  │  > Show system status           │
+  │  > Generate image of "..."      │
+  │  > Open AI Terminal             │
+  │  > Clear workspace              │
+  └─────────────────────────────────┘
+```
+
+---
+
+## 8. Agent Communication Model
+
+Programs communicate via an **internal message bus**:
+
+```typescript
+interface AgentMessage {
+  from: string;        // source program ID
+  to: string;          // target program ID (or "*" for broadcast)
+  type: MessageType;
+  payload: unknown;
+  timestamp: number;
+  correlationId?: string; // for request-response pairing
+}
+
+type MessageType =
+  | 'request'      // synchronous call
+  | 'response'     // reply to request
+  | 'event'        // fire-and-forget notification
+  | 'broadcast'    // to all programs
+  | 'pipe'         // streaming data transfer;
+```
+
+### Communication Patterns
+
+| Pattern | Description | Example |
+|---|---|---|
+| **Request/Response** | Program A asks B for data | Chat → Memory: "search for X" |
+| **Publish/Subscribe** | Program emits events others consume | Code Studio → *: "file saved" |
+| **Pipeline** | Output of A feeds into B | Research → Chat: "here are findings" |
+| **Orchestration** | Workflow Engine coordinates chain | Workflow → A → B → C → output |
+
+---
+
+## Directory Structure
+
+```
+whyspace-os/
+├── docs/
+│   ├── ARCHITECTURE.md         ← You are here
+│   ├── SYSTEM-CALLS.md
+│   ├── PROGRAM-MODEL.md
+│   ├── PROVIDER-ABSTRACTION.md
+│   ├── MEMORY-ORCHESTRATION.md
+│   └── WORKSPACE-NAVIGATION.md
+├── packages/
+│   ├── frontend/               # React + Vite + TypeScript
+│   │   ├── src/
+│   │   │   ├── apps/           # AI Programs
+│   │   │   ├── desktop/        # Desktop environment
+│   │   │   ├── kernel/         # Client-side kernel
+│   │   │   ├── components/     # Shared UI primitives
+│   │   │   ├── hooks/          # React hooks
+│   │   │   └── stores/         # Zustand stores
+│   │   ├── public/
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   ├── server/                 # Node.js + Fastify
+│   │   ├── src/
+│   │   │   ├── kernel/         # Server-side kernel
+│   │   │   │   ├── providers/  # AI provider drivers
+│   │   │   │   ├── memory/     # Memory orchestration
+│   │   │   │   ├── workflows/  # Workflow engine
+│   │   │   │   └── agents/     # Agent communication
+│   │   │   ├── api/            # REST endpoints
+│   │   │   ├── ws/             # WebSocket handlers
+│   │   │   └── db/             # Database layer
+│   │   ├── prisma/
+│   │   └── package.json
+│   └── shared/                 # Shared types & utilities
+│       ├── types/
+│       ├── constants/
+│       └── utils/
+├── package.json                # Root workspace
+├── turbo.json                  # Turborepo config (optional)
+└── .gitignore
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend Framework** | React 18+ |
+| **Build Tool** | Vite 6 |
+| **Language** | TypeScript (strict) |
+| **Styling** | TailwindCSS |
+| **Animation** | Framer Motion |
+| **State Management** | Zustand |
+| **Code Editor** | Monaco Editor |
+| **Backend Framework** | Fastify |
+| **Realtime** | WebSockets (fastify-websocket) |
+| **ORM** | Prisma |
+| **Database** | SQLite → PostgreSQL |
+| **Auth** | JWT (future) |
+| **Monorepo** | npm workspaces |

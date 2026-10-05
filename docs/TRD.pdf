@@ -1,0 +1,285 @@
+# WHYspace Program Model
+
+## What is a Program?
+
+A **program** in WHYspace is a self-contained AI-native application that runs within the spatial desktop environment. Each program has its own UI, its own system prompt context, and communicates through system calls.
+
+Programs are the **killer feature** — they transform WHYspace from a chatbot into an operating system.
+
+---
+
+## Program Interface
+
+```typescript
+interface ProgramManifest {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  author?: string;
+  icon: string;           // icon name or URL
+  category: ProgramCategory;
+
+  // Window defaults
+  defaultWindow: {
+    width: number;
+    height: number;
+    minWidth?: number;
+    minHeight?: number;
+    resizable?: boolean;
+  };
+
+  // System prompt fragment injected into kernel
+  systemPrompt?: string;
+
+  // Capabilities this program needs
+  permissions: Permission[];
+
+  // Commands exposed to palette
+  commands: CommandDef[];
+
+  // Icon component path
+  componentPath: string;
+}
+
+type ProgramCategory =
+  | 'communication'
+  | 'development'
+  | 'knowledge'
+  | 'creative'
+  | 'automation'
+  | 'system';
+
+type Permission =
+  | 'ai:chat'
+  | 'ai:vision'
+  | 'ai:audio'
+  | 'memory:read'
+  | 'memory:write'
+  | 'fs:read'
+  | 'fs:write'
+  | 'program:launch'
+  | 'workflow:execute'
+  | 'network';
+```
+
+---
+
+## Built-in Programs
+
+### 1. Core Chat
+
+```
+ID: core-chat
+Category: communication
+System Prompt: General-purpose conversational AI assistant
+Capabilities: ai:chat, memory:read, memory:write
+```
+
+The flagship conversational interface. Supports:
+- Multi-turn conversations with full context
+- Markdown rendering with code highlighting
+- File/image upload with automatic analysis
+- Conversation branching
+- Context-aware follow-ups
+
+### 2. Code Studio
+
+```
+ID: code-studio
+Category: development
+System Prompt: Expert programming AI with full-stack knowledge
+Capabilities: ai:chat, ai:vision, memory:read, memory:write, fs:read, fs:write
+```
+
+AI pair programmer with integrated code editor:
+- Monaco Editor with syntax highlighting
+- Multi-language support (Python, JS, TS, Java, C++, Go, Rust, SQL)
+- AI code generation, review, and refactoring
+- Execute code in sandboxed environment
+- Git integration
+- File tree browser
+
+### 3. Research Agent
+
+```
+ID: research-agent
+Category: knowledge
+System Prompt: Deep research AI with analytical reasoning
+Capabilities: ai:chat, memory:read, memory:write, fs:read
+```
+
+Deep research and analysis tool:
+- Multi-source research synthesis
+- Structured report generation
+- Source comparison and bias detection
+- Citation management
+- Export to PDF/Markdown
+- Follow-up question generation
+
+### 4. Memory Vault
+
+```
+ID: memory-vault
+Category: knowledge
+System Prompt: Knowledge management and retrieval AI
+Capabilities: memory:read, memory:write, ai:chat
+```
+
+Visual knowledge management:
+- Knowledge graph visualization
+- Semantic search interface
+- Memory browser with filters
+- Tag and category management
+- Import/export memories
+- Timeline view
+
+### 5. Image Forge
+
+```
+ID: image-forge
+Category: creative
+System Prompt: Creative AI artist and image editor
+Capabilities: ai:vision, ai:chat, fs:read, fs:write
+```
+
+AI image generation and editing:
+- Text-to-image generation (DALL-E, Gemini)
+- Image editing and inpainting
+- Style transfer
+- Batch generation
+- Gallery view
+- Prompt history and refinement
+
+### 6. Voice Nexus
+
+```
+ID: voice-nexus
+Category: communication
+System Prompt: Voice interaction AI assistant
+Capabilities: ai:audio, ai:chat
+```
+
+Voice interaction hub:
+- Speech-to-text with live transcription
+- Text-to-speech with multiple voices
+- Voice activity detection
+- Audio file transcription
+- Multi-language support
+- Voice commands
+
+### 7. Workflow Automator
+
+```
+ID: workflow-automator
+Category: automation
+System Prompt: Workflow automation and orchestration AI
+Capabilities: ai:chat, memory:read, memory:write, workflow:execute, program:launch
+```
+
+Visual workflow builder:
+- Drag-and-drop workflow editor
+- Pre-built template library
+- Trigger system (time, event, manual)
+- Step chaining with data transformation
+- Error handling and retry logic
+- Execution logs and monitoring
+
+### 8. AI Terminal
+
+```
+ID: ai-terminal
+Category: development
+System Prompt: Technical AI with shell and system expertise
+Capabilities: ai:chat, fs:read, fs:write, program:launch
+```
+
+Natural language command line:
+- Shell-like interface
+- Natural language to command translation
+- System call direct access
+- Script execution
+- Command history
+- Output streaming
+
+---
+
+## Program Lifecycle
+
+```
+INSTALLED → LAUNCHED → ACTIVE → BACKGROUND → TERMINATED
+                ↓                           ↑
+            HIBERNATED ──────────────────────┘
+```
+
+| State | Description |
+|---|---|
+| `INSTALLED` | Program registered but not running |
+| `LAUNCHING` | Initializing, loading resources |
+| `ACTIVE` | Has window focus, receiving input |
+| `BACKGROUND` | Running but no focus |
+| `HIBERNATED` | State saved, minimal resources |
+| `TERMINATED` | Stopped, resources freed |
+
+---
+
+## Building Custom Programs
+
+Third-party programs follow the same interface. A program is just a directory with a `manifest.json` and a React component:
+
+```
+my-program/
+├── manifest.json     # ProgramManifest
+├── icon.svg          # Program icon
+├── index.tsx         # Main component
+└── styles.css        # Optional styles
+```
+
+### manifest.json
+
+```json
+{
+  "id": "my-custom-tutor",
+  "name": "AI Tutor Pro",
+  "version": "1.0.0",
+  "description": "Personalized tutoring across all subjects",
+  "author": "Community",
+  "icon": "graduation-cap",
+  "category": "knowledge",
+  "defaultWindow": { "width": 700, "height": 500 },
+  "systemPrompt": "You are an expert tutor...",
+  "permissions": ["ai:chat", "memory:read", "memory:write"],
+  "commands": [
+    { "id": "tutor.quiz", "label": "Generate Quiz", "params": {} }
+  ]
+}
+```
+
+### Component Template
+
+```tsx
+import { useProgram, useSyscall } from '@whyspace/kernel';
+
+export default function AITutorPro() {
+  const { pid, window } = useProgram();
+  const syscall = useSyscall();
+
+  const handleAsk = async (question: string) => {
+    const stream = syscall('ai.stream', {
+      messages: [{ role: 'user', content: question }],
+      system: 'You are an expert tutor...'
+    });
+
+    for await (const chunk of stream) {
+      // render chunk.data
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h1>AI Tutor Pro</h1>
+      {/* your UI */}
+    </div>
+  );
+}
+```

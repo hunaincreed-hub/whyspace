@@ -1,0 +1,228 @@
+# WHYspace Agent Communication Model
+
+## Overview
+
+Programs in WHYspace are not isolated — they communicate through an **internal message bus**. This enables complex multi-agent workflows where programs collaborate, share data, and trigger actions in response to events.
+
+---
+
+## Message Bus Architecture
+
+```
+┌────────────────────────────────────────────────────┐
+│                  MESSAGE BUS                        │
+│                                                     │
+│  publish(message) → [Topic] → subscribers receive  │
+│                                                     │
+│  request(from, to, payload) → response promise     │
+│                                                     │
+│  pipe(from, to, transform) → continuous stream     │
+└────────────────────────────────────────────────────┘
+```
+
+---
+
+## Message Format
+
+```typescript
+interface AgentMessage {
+  id: string;                    // unique message ID
+  type: MessageType;
+  from: string;                  // source program ID
+  to: string | '*';             // target or broadcast
+  topic?: string;               // for pub/sub routing
+  payload: unknown;
+  timestamp: number;
+  correlationId?: string;       // pairs request/response
+  ttl?: number;                 // time-to-live in ms
+  priority?: 'low' | 'normal' | 'high';
+}
+
+type MessageType =
+  | 'request'       // Expect a response
+  | 'response'      // Reply to a request
+  | 'event'         // Fire-and-forget notification
+  | 'broadcast'     // To all subscribers
+  | 'pipe_chunk'    // Streaming data segment
+  | 'pipe_end'      // Stream terminated
+  | 'error';        // Error response
+```
+
+---
+
+## Communication Patterns
+
+### 1. Request/Response
+
+Synchronous-style communication between programs:
+
+```typescript
+// Program A: Memory Vault
+const { results } = await kernel.request({
+  to: 'research-agent',
+  type: 'request',
+  payload: {
+    action: 'summarize',
+    text: selectedText
+  }
+});
+
+// Program B: Research Agent handles it
+kernel.onRequest('research-agent', async (msg) => {
+  if (msg.payload.action === 'summarize') {
+    const summary = await summarize(msg.payload.text);
+    return { type: 'response', payload: { summary } };
+  }
+});
+```
+
+### 2. Event Pub/Sub
+
+Fire-and-forget notifications:
+
+```typescript
+// Code Studio emits an event on file save
+kernel.emit('file:saved', {
+  path: '/src/components/App.tsx',
+  size: 1243
+});
+
+// Workflow Automator listens
+kernel.on('file:saved', (event) => {
+  if (event.payload.path.endsWith('.tsx')) {
+    kernel.launch('code-studio', { action: 'lint', file: event.payload.path });
+  }
+});
+```
+
+### 3. Program Piping
+
+Stream data directly between programs:
+
+```typescript
+// Pipe Research Agent output into Core Chat
+kernel.pipe({
+  from: 'research-agent',
+  to: 'core-chat',
+  transform: (data) => ({
+    role: 'assistant',
+    content: `**Research Findings:**\n\n${data.content}`
+  })
+});
+
+// Cancel the pipe
+kernel.unpipe(pipeId);
+```
+
+### 4. Workflow Orchestration
+
+The Workflow Automator coordinates multi-step pipelines:
+
+```typescript
+const workflow = await kernel.createWorkflow({
+  name: 'Daily Research Brief',
+  steps: [
+    { program: 'research-agent', action: 'gather', params: { topics: ['AI', 'quantum'] } },
+    { program: 'research-agent', action: 'summarize' },
+    { program: 'core-chat', action: 'format', params: { style: 'brief' } },
+    { program: 'voice-nexus', action: 'tts', params: { voice: 'en-US-Neural2-F' } }
+  ],
+  trigger: { type: 'schedule', cron: '0 8 * * 1-5' }
+});
+```
+
+---
+
+## Event Reference
+
+### System Events
+
+| Event | Payload | Description |
+|---|---|---|
+| `system:boot` | `{ version }` | OS started |
+| `system:shutdown` | `{}` | OS shutting down |
+| `system:provider:changed` | `{ from, to }` | AI provider switched |
+| `system:memory:warning` | `{ usage, limit }` | Memory threshold crossed |
+| `system:error` | `{ code, message }` | Unhandled system error |
+
+### Program Events
+
+| Event | Payload | Description |
+|---|---|---|
+| `program:launched` | `{ id, pid }` | Program started |
+| `program:terminated` | `{ id, pid, reason }` | Program stopped |
+| `program:error` | `{ id, pid, error }` | Program encountered error |
+| `program:state:changed` | `{ id, from, to }` | Program state transition |
+
+### AI Events
+
+| Event | Payload | Description |
+|---|---|---|
+| `ai:stream:start` | `{ id, provider, model }` | AI stream started |
+| `ai:stream:chunk` | `{ id, delta }` | Token received |
+| `ai:stream:done` | `{ id, usage }` | Stream completed |
+| `ai:stream:error` | `{ id, error }` | Stream error |
+| `ai:tool:called` | `{ tool, args, result }` | AI used a tool |
+
+### Memory Events
+
+| Event | Payload | Description |
+|---|---|---|
+| `memory:stored` | `{ key, program }` | New memory entry |
+| `memory:deleted` | `{ key }` | Memory deleted |
+| `memory:search:done` | `{ query, count }` | Search completed |
+
+---
+
+## Bus Implementation
+
+```typescript
+class MessageBus {
+  private handlers: Map<string, Set<Handler>>;
+  private pending: Map<string, PromiseWithResolvers>;
+
+  publish(msg: AgentMessage): void {
+    const handlers = this.handlers.get(msg.to) ?? new Set();
+    const wildcard = this.handlers.get('*') ?? new Set();
+    
+    for (const handler of [...handlers, ...wildcard]) {
+      handler(msg);
+    }
+  }
+
+  async request(to: string, payload: unknown, timeout = 30000): Promise<unknown> {
+    const correlationId = crypto.randomUUID();
+    const { promise, resolve, reject } = Promise.withResolvers();
+    
+    this.pending.set(correlationId, { resolve, reject });
+    
+    this.publish({
+      id: crypto.randomUUID(),
+      type: 'request',
+      from: 'current-program',
+      to,
+      payload,
+      correlationId,
+      timestamp: Date.now()
+    });
+
+    // Timeout
+    setTimeout(() => {
+      if (this.pending.has(correlationId)) {
+        this.pending.delete(correlationId);
+        reject(new Error('Request timed out'));
+      }
+    }, timeout);
+
+    return promise;
+  }
+
+  respond(correlationId: string, payload: unknown): void {
+    const pending = this.pending.get(correlationId);
+    if (pending) {
+      pending.resolve(payload);
+      this.pending.delete(correlationId);
+    }
+  }
+}
+```
